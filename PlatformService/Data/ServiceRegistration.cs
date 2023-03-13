@@ -10,10 +10,17 @@ namespace PlatformService.Data
 {
     public static class ServiceRegistration
     {
-        public static IServiceCollection RegisterServices(this IServiceCollection services, IConfiguration configuration) {
-
-            services.AddDbContext<AppDbContext>(options =>
-            options.UseInMemoryDatabase("InMem"));
+        public static IServiceCollection RegisterServices(this IServiceCollection services, IConfiguration configuration, IWebHostEnvironment env) {
+            if (env.IsDevelopment())
+            {
+				services.AddDbContext<AppDbContext>(options =>
+options.UseInMemoryDatabase("InMem"));
+			}
+            else
+            {
+				services.AddDbContext<AppDbContext>(options =>
+options.UseSqlServer(configuration.GetConnectionString("PlatformsConn")));
+			}
 
             services.AddHttpClient<ICommandDataClient, HttpCommandDataClient>();
 
