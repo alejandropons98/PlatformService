@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using PlatformService.Application.Commands;
 using PlatformService.Application.Queries;
 using PlatformService.Models;
+using PlatformService.SyncDataServices.Http;
 using PlatformService.Utils;
 
 namespace PlatformService.Controllers

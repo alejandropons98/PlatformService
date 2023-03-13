@@ -3,6 +3,7 @@ using MediatR;
 using PlatformService.Application.Queries;
 using PlatformService.Data.Interfaces;
 using PlatformService.Models;
+using PlatformService.SyncDataServices.Http;
 
 namespace PlatformService.Application.Commands
 {
@@ -10,11 +11,13 @@ namespace PlatformService.Application.Commands
     {
         private readonly IUnitOfWork _unitOfWork;
         private readonly IMapper _mapper;
+        private readonly ICommandDataClient _commandDataClient;
 
-        public CreatePlatformHandler(IUnitOfWork unitOfWork, IMapper mapper)
+        public CreatePlatformHandler(IUnitOfWork unitOfWork, IMapper mapper, ICommandDataClient commandDataClient)
         {
             _unitOfWork = unitOfWork;
             _mapper = mapper;
+            _commandDataClient = commandDataClient;
         }
         public async Task<ApiResponse<CreatePlatformRequest>> Handle(CreatePlatformRequest request, CancellationToken cancellationToken)
         {
@@ -37,6 +40,18 @@ namespace PlatformService.Application.Commands
                     CodeResult = StatusCodes.Status200OK.ToString();
                     Message = "Success, and there is a response body.";
                     success = true;
+
+                    try
+                    {
+                        await _commandDataClient.SendPlatformToCommand(response);
+                    }
+                    catch(Exception ex)
+                    {
+                        CodeResult = StatusCodes.Status500InternalServerError.ToString();
+                        Message = $"Error sending platform to command: {ex.Message}";
+                        success = false;
+                        response = null;
+                    }
                 }
                 else
                 {

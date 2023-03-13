@@ -4,6 +4,7 @@ using PlatformService.Data.Interfaces;
 using PlatformService.Data.Repositories;
 using System.Reflection;
 using MediatR;
+using PlatformService.SyncDataServices.Http;
 
 namespace PlatformService.Data
 {
@@ -14,12 +15,15 @@ namespace PlatformService.Data
             services.AddDbContext<AppDbContext>(options =>
             options.UseInMemoryDatabase("InMem"));
 
+            services.AddHttpClient<ICommandDataClient, HttpCommandDataClient>();
+
             services.AddScoped<IUnitOfWork, UnitOfWork>();
             services.AddScoped(typeof(IGenericRepo<>), typeof(GenericRepo<>));
             services.AddScoped<IPlatformRepo, PlatformRepo>();
 
             services.AddMediatR(Assembly.GetExecutingAssembly());
             services.AddAutoMapper(Assembly.GetExecutingAssembly());
+
 
             return services;
         
