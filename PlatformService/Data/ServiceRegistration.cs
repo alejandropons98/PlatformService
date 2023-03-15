@@ -5,6 +5,7 @@ using PlatformService.Data.Repositories;
 using System.Reflection;
 using MediatR;
 using PlatformService.SyncDataServices.Http;
+using PlatformService.AsyncDataServices;
 
 namespace PlatformService.Data
 {
@@ -23,6 +24,7 @@ options.UseSqlServer(configuration.GetConnectionString("PlatformsConn")));
 			}
 
             services.AddHttpClient<ICommandDataClient, HttpCommandDataClient>();
+            services.AddSingleton<IMessageBusClient, MessageBusClient>();
 
             services.AddScoped<IUnitOfWork, UnitOfWork>();
             services.AddScoped(typeof(IGenericRepo<>), typeof(GenericRepo<>));

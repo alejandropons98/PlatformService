@@ -15,6 +15,8 @@ namespace PlatformService.Profiles
 
             CreateMap<Platform, CreatePlatformRequest>();
 
+            CreateMap<CreatePlatformRequest, PublishPlatformRequest>();
+
         }
     }
 }

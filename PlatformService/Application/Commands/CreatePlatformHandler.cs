@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
 using MediatR;
 using PlatformService.Application.Queries;
+using PlatformService.AsyncDataServices;
 using PlatformService.Data.Interfaces;
 using PlatformService.Models;
 using PlatformService.SyncDataServices.Http;
@@ -12,12 +13,14 @@ namespace PlatformService.Application.Commands
         private readonly IUnitOfWork _unitOfWork;
         private readonly IMapper _mapper;
         private readonly ICommandDataClient _commandDataClient;
+        private readonly IMessageBusClient _messageBus;
 
-        public CreatePlatformHandler(IUnitOfWork unitOfWork, IMapper mapper, ICommandDataClient commandDataClient)
+        public CreatePlatformHandler(IUnitOfWork unitOfWork, IMapper mapper, ICommandDataClient commandDataClient, IMessageBusClient messageBus)
         {
             _unitOfWork = unitOfWork;
             _mapper = mapper;
             _commandDataClient = commandDataClient;
+            _messageBus = messageBus;
         }
         public async Task<ApiResponse<CreatePlatformRequest>> Handle(CreatePlatformRequest request, CancellationToken cancellationToken)
         {
@@ -48,7 +51,23 @@ namespace PlatformService.Application.Commands
                     catch(Exception ex)
                     {
                         CodeResult = StatusCodes.Status500InternalServerError.ToString();
-                        Message = $"Error sending platform to command: {ex.Message}";
+                        Message = $"Error sending sync platform to command: {ex.Message}";
+                        success = false;
+                        response = null;
+                    }
+
+                    try
+                    {
+                        var platform = _mapper.Map<PublishPlatformRequest>(response);
+                        platform.Event = "Platform_Published";
+                        _messageBus.PublishNewPlatform(platform);
+
+                    }
+                    catch (Exception ex)
+                    {
+
+                        CodeResult = StatusCodes.Status500InternalServerError.ToString();
+                        Message = $"Error sending async platform to command: {ex.Message}";
                         success = false;
                         response = null;
                     }
